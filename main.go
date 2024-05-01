@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"math/rand"
 	"time"
@@ -27,10 +26,9 @@ func main() {
 
 	router.GET("/dotask/:key", func(c *gin.Context) {
 		key := c.Param("key")
-		ctx := context.Background()
 		mutex := redisSync.NewMutex(key)
 
-		if err := mutex.LockContext(ctx); err != nil {
+		if err := mutex.Lock(); err != nil {
 			fmt.Println(err)
 			c.JSON(429, gin.H{"message": "barrado no baile"})
 			return
@@ -39,7 +37,7 @@ func main() {
 		n := random.Intn(500)
 		time.Sleep(time.Duration(n) * time.Millisecond)
 
-		if _, err := mutex.UnlockContext(ctx); err != nil {
+		if _, err := mutex.Unlock(); err != nil {
 			fmt.Println(err)
 			c.JSON(429, gin.H{"message": "Erro ao liberar trava"})
 			return
