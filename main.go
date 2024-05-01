@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"math/rand"
 	"time"
 
@@ -14,7 +15,8 @@ func main() {
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	client := goredislib.NewClient(&goredislib.Options{
-		Addr: "localhost:6379",
+		Addr:     "localhost:6379",
+		Password: "$3nh4!",
 	})
 
 	pool := goredis.NewPool(client)
@@ -24,11 +26,19 @@ func main() {
 
 	router.GET("/dotask/:key", func(c *gin.Context) {
 		key := c.Param("key")
+		ctx := context.Background()
 		mutex := redisSync.NewMutex(key)
-		defer mutex.Unlock()
 
-		n := random.Intn(3)
-		time.Sleep(time.Duration(n) * time.Second)
+		if err := mutex.LockContext(ctx); err != nil {
+			panic(err)
+		}
+
+		n := random.Intn(500)
+		time.Sleep(time.Duration(n) * time.Millisecond)
+
+		if _, err := mutex.UnlockContext(ctx); err != nil {
+			panic(err)
+		}
 
 		c.JSON(200, gin.H{
 			"message": "pong",
