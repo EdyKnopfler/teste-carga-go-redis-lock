@@ -1,0 +1,9 @@
+services:
+
+  redis:
+    image: redis:7.2.1-alpine
+    command: redis-server --requirepass $3nh4!
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis-data:/data
