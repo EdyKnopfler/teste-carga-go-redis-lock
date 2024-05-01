@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -30,19 +31,21 @@ func main() {
 		mutex := redisSync.NewMutex(key)
 
 		if err := mutex.LockContext(ctx); err != nil {
-			panic(err)
+			fmt.Println(err)
+			c.JSON(429, gin.H{"message": "barrado no baile"})
+			return
 		}
 
 		n := random.Intn(500)
 		time.Sleep(time.Duration(n) * time.Millisecond)
 
 		if _, err := mutex.UnlockContext(ctx); err != nil {
-			panic(err)
+			fmt.Println(err)
+			c.JSON(429, gin.H{"message": "Erro ao liberar trava"})
+			return
 		}
 
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
+		c.JSON(200, gin.H{"message": "pong"})
 	})
 
 	router.Run(":8080")
