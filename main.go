@@ -1,8 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -46,5 +51,31 @@ func main() {
 		c.JSON(200, gin.H{"message": "pong"})
 	})
 
-	router.Run(":8080")
+	srv := &http.Server{
+		Addr:    ":8080",
+		Handler: router,
+	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			fmt.Println("Erro ao criar servidor:", err)
+		}
+	}()
+
+	stop := make(chan os.Signal)
+	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT, os.Interrupt) // os.Interrupt: Ctrl+C
+	<-stop
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	fmt.Println("Parando...")
+
+	if err := srv.Shutdown(ctx); err != nil {
+		fmt.Println("Erro ao encerrar servidor:", err)
+	}
+
+	select {
+	case <-ctx.Done():
+		fmt.Println("Servidor encerrado")
+	}
 }
