@@ -47,8 +47,8 @@ func createRouter(redisSync *redsync.Redsync) *gin.Engine {
 
 func appStart() (*http.Server, *goredislib.Client) {
 	client := goredislib.NewClient(&goredislib.Options{
-		Addr:     "localhost:6379",
-		Password: "$3nh4!",
+		Addr:     fmt.Sprintf("%s:%s", os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT")),
+		Password: os.Getenv("REDIS_PASSWORD"),
 	})
 
 	pool := goredis.NewPool(client)

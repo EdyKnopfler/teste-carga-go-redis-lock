@@ -7,3 +7,15 @@ services:
       - "6379:6379"
     volumes:
       - ./redis-data:/data
+  
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/go/src
+      - ./gopkg:/go/pkg/mod
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: $3nh4!
