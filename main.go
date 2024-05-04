@@ -25,7 +25,7 @@ func createRouter(redisSync *redsync.Redsync) *gin.Engine {
 
 		if err := mutex.Lock(); err != nil {
 			fmt.Println(err)
-			c.JSON(429, gin.H{"message": "barrado no baile"})
+			c.JSON(409, gin.H{"message": "barrado no baile"})
 			return
 		}
 
@@ -35,7 +35,7 @@ func createRouter(redisSync *redsync.Redsync) *gin.Engine {
 
 		if _, err := mutex.Unlock(); err != nil {
 			fmt.Println(err)
-			c.JSON(429, gin.H{"message": "Erro ao liberar trava"})
+			c.JSON(500, gin.H{"message": "Erro ao liberar trava"})
 			return
 		}
 
