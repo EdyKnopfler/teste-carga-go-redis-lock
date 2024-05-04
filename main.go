@@ -16,17 +16,7 @@ import (
 	goredislib "github.com/redis/go-redis/v9"
 )
 
-func main() {
-	random := rand.New(rand.NewSource(time.Now().UnixNano()))
-
-	client := goredislib.NewClient(&goredislib.Options{
-		Addr:     "localhost:6379",
-		Password: "$3nh4!",
-	})
-
-	pool := goredis.NewPool(client)
-	redisSync := redsync.New(pool)
-
+func createRouter(redisSync *redsync.Redsync) *gin.Engine {
 	router := gin.Default()
 
 	router.GET("/dotask/:key", func(c *gin.Context) {
@@ -39,7 +29,8 @@ func main() {
 			return
 		}
 
-		n := random.Intn(500)
+		random := rand.New(rand.NewSource(time.Now().UnixNano()))
+		n := random.Intn(5000)
 		time.Sleep(time.Duration(n) * time.Millisecond)
 
 		if _, err := mutex.Unlock(); err != nil {
@@ -51,6 +42,19 @@ func main() {
 		c.JSON(200, gin.H{"message": "pong"})
 	})
 
+	return router
+}
+
+func appStart() (*http.Server, *goredislib.Client) {
+	client := goredislib.NewClient(&goredislib.Options{
+		Addr:     "localhost:6379",
+		Password: "$3nh4!",
+	})
+
+	pool := goredis.NewPool(client)
+	redisSync := redsync.New(pool)
+	router := createRouter(redisSync)
+
 	srv := &http.Server{
 		Addr:    ":8080",
 		Handler: router,
@@ -58,9 +62,17 @@ func main() {
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			fmt.Println("Erro ao criar servidor:", err)
+			fmt.Println("Erro ao criar servidor")
+			panic(err)
 		}
 	}()
+
+	return srv, client
+}
+
+func main() {
+	srv, client := appStart()
+	defer client.Close()
 
 	stop := make(chan os.Signal)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT, os.Interrupt) // os.Interrupt: Ctrl+C
