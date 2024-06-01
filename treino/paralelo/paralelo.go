@@ -42,7 +42,7 @@ func main() {
 
 	if distribuido < len(dados) {
 		quantas++
-		go soma(dados[distribuido:len(dados)], ch)
+		go soma(dados[distribuido:], ch)
 	}
 
 	total := uint64(0)
