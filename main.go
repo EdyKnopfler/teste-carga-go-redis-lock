@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redsync/redsync/v4"
 	"github.com/go-redsync/redsync/v4/redis/goredis/v9"
@@ -42,6 +43,7 @@ func createRouter(redisSync *redsync.Redsync) *gin.Engine {
 		c.JSON(200, gin.H{"message": "pong"})
 	})
 
+	pprof.Register(router)
 	return router
 }
 
