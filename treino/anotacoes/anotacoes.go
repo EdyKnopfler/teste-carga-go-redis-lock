@@ -19,8 +19,8 @@ func StringComPontinhos(s string) string {
 	var buffer bytes.Buffer
 
 	for _, c := range s {
-		buffer.WriteString(string(c))
-		buffer.WriteString(".")
+		buffer.WriteRune(c)
+		buffer.WriteRune('.')
 	}
 
 	return buffer.String()
