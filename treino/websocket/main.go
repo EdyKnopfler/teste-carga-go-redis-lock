@@ -52,6 +52,13 @@ func (s *Server) RemoveConnection(conn *websocket.Conn) {
 	delete(s.mainMap, conn)
 }
 
+func (s *Server) PeriodicUpdate() {
+	for {
+		time.Sleep(5 * time.Second) // Atualiza a cada 5 segundos
+		s.UpdateBroadcastMap()
+	}
+}
+
 // Cria uma nova cópia para o broadcast
 func (s *Server) UpdateBroadcastMap() {
 	s.mutex.Lock()
